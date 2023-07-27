@@ -37,36 +37,44 @@ func checkLayer(l Layer) {
 	}
 	img := getImg(filepath.Join(oradir, l.Src))
 	b := img.Bounds()
-	var tc int  // translucent pixel counter
-	var npc int // non-palette pixel counter
+	var transparent,
+		translucent,
+		wrong int
 	for y := b.Min.Y; y < b.Max.Y; y++ {
 		for x := b.Min.X; x < b.Max.X; x++ {
 			c := img.At(x, y)
 			_, _, _, a := c.RGBA()
-			if a > 0 && a < 0xffff {
-				tc++
-				//fmt.Println(c)
+			if a == 0 {
+				transparent++
+				continue
 			}
-			if !rgbEq(c, palette.Convert(c)) {
-				npc++
+			if colorEq(c, palette.Convert(c)) {
+				continue
+			}
+			wrong++
+			if a < 0xffff {
+				translucent++
 			}
 		}
 	}
-	if tc > 0 {
-		fmt.Printf(`[WARNING] "%v" has %v translucent pixels`+"\n", l.Name, tc)
+	area := b.Dx() * b.Dy()
+	total := area - transparent
+	if wrong > 0 {
+		fmt.Printf("[WARNING] %q has %v/%v wrong pixels\n", l.Name, wrong, total)
 	}
-	if npc > 0 {
-		fmt.Printf(`[WARNING] "%v" has %v pixels not matching the palette`+"\n", l.Name, npc)
+	if total == 0 {
+		fmt.Printf("[INFO] %q is empty\n", l.Name)
 	}
 }
 
-func rgbEq(a, b color.Color) bool {
-	aR, aG, aB, _ := a.RGBA()
-	bR, bG, bB, _ := b.RGBA()
+func colorEq(a, b color.Color) bool {
+	aR, aG, aB, aA := a.RGBA()
+	bR, bG, bB, bA := b.RGBA()
 
 	return (aR == bR &&
 		aG == bG &&
-		aB == bB)
+		aB == bB &&
+		aA == bA)
 }
 
 // Load palette from GIMP palette file (.gpl)
