@@ -17,7 +17,7 @@ var palette = loadPalette("r-slash-place-2023.gpl")
 
 var layersToIgnore = []string{
 	"Sector Map",
-	"Noise Removal",
+	//"Noise Removal",
 	"BASE LAYER",
 }
 
@@ -33,12 +33,16 @@ func checkLayer(l Layer) {
 		return
 	}
 	if l.Opacity != 1.0 {
-		fmt.Printf("[WARNING] %q has opacity %v\n", l.Name, l.Opacity)
+		fmt.Printf("[WARN] %q has opacity %v\n", l.Name, l.Opacity)
 	}
 	img := getImg(filepath.Join(oradir, l.Src))
-	total, wrong, diff := checkColors(img)
+	total, wrong, _, correctTranslucent, diff := checkColors(img)
 	if wrong > 0 {
-		fmt.Printf("[WARNING] %q has %v/%v wrong pixels\n", l.Name, wrong, total)
+		fmt.Printf("[WARN] %q has %v/%v pixels not matching the palette", l.Name, wrong, total)
+		if correctTranslucent > 0 {
+			fmt.Printf(". %v are translucent but otherwise correct", correctTranslucent)
+		}
+		fmt.Println()
 		os.MkdirAll("diff", 0755)
 		savePng(diff, filepath.Join("diff", l.Name+"_"+filepath.Base(l.Src)))
 	}
@@ -47,31 +51,65 @@ func checkLayer(l Layer) {
 	}
 }
 
-func checkColors(img image.Image) (total, wrong int, diff image.Image) {
+// Opaque color
+type rgb struct {
+	r, g, b uint8
+}
+
+// Implement color.Color
+func (c rgb) RGBA() (r, g, b, a uint32) {
+	return color.RGBA{c.r, c.g, c.b, 255}.RGBA()
+}
+
+func checkColors(img image.Image) (total, wrong, translucent, correctTranslucent int, diff image.Image) {
 	b := img.Bounds()
-	p := []color.Color{color.Transparent, color.RGBA{255, 0, 0, 255}}
-	diff = image.NewPaletted(b, p)
+	diff = image.NewPaletted(b, []color.Color{color.Transparent, rgb{255, 0, 0}})
 	var transparent int
-	//var translucent, wrong int
 	for y := b.Min.Y; y < b.Max.Y; y++ {
 		for x := b.Min.X; x < b.Max.X; x++ {
 			c := img.At(x, y)
-			_, _, _, a := c.RGBA()
+			a := alpha(c)
 			if a == 0 {
 				transparent++
 				continue
 			}
-			if colorEq(c, palette.Convert(c)) {
+			palettized := palette.Convert(c)
+			if colorEq(c, palettized) {
 				continue
 			}
 			wrong++
+			if a < 255 {
+				translucent++
+				if rgbEq(c, palettized) {
+					correctTranslucent++
+				}
+			}
 			diff.(*image.Paletted).SetColorIndex(x, y, 1)
-			//if a < 0xffff { translucent++ }
 		}
 	}
 	area := b.Dx() * b.Dy()
 	total = area - transparent
 	return
+}
+
+func alpha(c color.Color) uint8 {
+	switch v := c.(type) {
+	case color.NRGBA:
+		return v.A
+	case rgb:
+		return 255
+	default:
+		panic(fmt.Sprintf("Unexpected color type %T\n", v))
+	}
+}
+
+func rgbEq(a, b color.Color) bool {
+	aR, aG, aB, _ := a.RGBA()
+	bR, bG, bB, _ := b.RGBA()
+
+	return (aR == bR &&
+		aG == bG &&
+		aB == bB)
 }
 
 func colorEq(a, b color.Color) bool {
@@ -100,7 +138,7 @@ func loadPalette(path string) color.Palette {
 		if n != 3 {
 			panic(fmt.Sprintf("Expected 3 numbers, have: %v", ln))
 		}
-		p = append(p, color.RGBA{r, g, b, 255})
+		p = append(p, rgb{r, g, b})
 	}
 	return p
 }
