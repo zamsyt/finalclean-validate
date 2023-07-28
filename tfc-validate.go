@@ -33,13 +33,26 @@ func checkLayer(l Layer) {
 		return
 	}
 	if l.Opacity != 1.0 {
-		fmt.Printf(`[WARNING] "%v" has opacity %v`+"\n", l.Name, l.Opacity)
+		fmt.Printf("[WARNING] %q has opacity %v\n", l.Name, l.Opacity)
 	}
 	img := getImg(filepath.Join(oradir, l.Src))
+	total, wrong, diff := checkColors(img)
+	if wrong > 0 {
+		fmt.Printf("[WARNING] %q has %v/%v wrong pixels\n", l.Name, wrong, total)
+		os.MkdirAll("diff", 0755)
+		savePng(diff, filepath.Join("diff", l.Name+"_"+filepath.Base(l.Src)))
+	}
+	if total == 0 {
+		fmt.Printf("[INFO] %q is empty\n", l.Name)
+	}
+}
+
+func checkColors(img image.Image) (total, wrong int, diff image.Image) {
 	b := img.Bounds()
-	var transparent,
-		translucent,
-		wrong int
+	p := []color.Color{color.Transparent, color.RGBA{255, 0, 0, 255}}
+	diff = image.NewPaletted(b, p)
+	var transparent int
+	//var translucent, wrong int
 	for y := b.Min.Y; y < b.Max.Y; y++ {
 		for x := b.Min.X; x < b.Max.X; x++ {
 			c := img.At(x, y)
@@ -52,19 +65,13 @@ func checkLayer(l Layer) {
 				continue
 			}
 			wrong++
-			if a < 0xffff {
-				translucent++
-			}
+			diff.(*image.Paletted).SetColorIndex(x, y, 1)
+			//if a < 0xffff { translucent++ }
 		}
 	}
 	area := b.Dx() * b.Dy()
-	total := area - transparent
-	if wrong > 0 {
-		fmt.Printf("[WARNING] %q has %v/%v wrong pixels\n", l.Name, wrong, total)
-	}
-	if total == 0 {
-		fmt.Printf("[INFO] %q is empty\n", l.Name)
-	}
+	total = area - transparent
+	return
 }
 
 func colorEq(a, b color.Color) bool {
