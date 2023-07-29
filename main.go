@@ -2,14 +2,32 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
+func testing(args []string) {
+	if len(args) < 2 {
+		log.Fatal("too few arguments")
+	}
+	o := OpenORA(args[1])
+	img := o.Layer("BASE LAYER")
+	fmt.Println(img.Bounds())
+	check(o.Close())
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 var cmds = map[string]func(args []string){
-	"hello": func(args []string) { fmt.Println("hi") },
+	"testing": testing,
 }
 
 func main() {
+	log.SetFlags(0)
 	if len(os.Args) < 2 {
 		printUsage()
 		os.Exit(0)
