@@ -2,28 +2,27 @@ package main
 
 import (
 	"fmt"
+	"image"
+	"image/png"
+	"io"
 	"log"
 	"os"
 )
 
-func testing(args []string) {
+var cmds = map[string]func(args []string){
+	"palette": checkPalette,
+}
+
+func checkPalette(args []string) {
 	if len(args) < 2 {
 		log.Fatal("too few arguments")
 	}
 	o := OpenORA(args[1])
-	img := o.Layer("BASE LAYER")
-	fmt.Println(img.Bounds())
-	check(o.Close())
-}
-
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-var cmds = map[string]func(args []string){
-	"testing": testing,
+	f, err := o.zip.Open("mergedimage.png")
+	check(err)
+	diff, n := genDiff(getImg(f))
+	fmt.Printf("%v pixels differ from the palette\n", n)
+	savePng(diff, "output.png")
 }
 
 func main() {
@@ -45,5 +44,25 @@ func printUsage() {
 	fmt.Println("Available commands:")
 	for k := range cmds {
 		fmt.Println("\t" + k)
+	}
+}
+
+func getImg(r io.ReadCloser) image.Image {
+	img, _, err := image.Decode(r)
+	check(err)
+	check(r.Close())
+	return img
+}
+
+func savePng(img image.Image, path string) {
+	f, err := os.Create(path)
+	check(err)
+	png.Encode(f, img)
+	f.Close()
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatal(err)
 	}
 }

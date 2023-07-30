@@ -50,10 +50,7 @@ func (o *ora) Layer(name string) image.Image {
 		if l.Name == name {
 			f, err := o.zip.Open(l.Src)
 			check(err)
-			img, _, err := image.Decode(f)
-			check(err)
-			check(f.Close())
-			return img
+			return getImg(f)
 		}
 	}
 	log.Printf("ora: image %q not found\n", name)
