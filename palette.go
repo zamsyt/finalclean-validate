@@ -46,7 +46,7 @@ var alphaTresholdFlag uint8
 func init() {
 	pflag.BoolVar(&cropFlag, "crop", false, "")
 	pflag.BoolVar(&diffFlag, "diff", false, "")
-	pflag.Uint8Var(&alphaTresholdFlag, "alpha-treshold", 0, "")
+	pflag.Uint8Var(&alphaTresholdFlag, "alpha-threshold", 0, "")
 }
 
 func checkLayer(o *ora, l oraLayer) {
