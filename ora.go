@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"encoding/xml"
 	"image"
-	_ "image/png"
 	"io"
 	"log"
 )

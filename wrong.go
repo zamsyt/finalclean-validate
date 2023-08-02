@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 )
 
-func genDiff(img image.Image) (diff image.Image, n int) {
+func genDiff(img image.Image) (diff image.Image, wrong, total int) {
 	var dp = []color.Color{
 		color.Transparent,
 		rgb{0x22, 0x00, 0x80},
@@ -25,6 +24,7 @@ func genDiff(img image.Image) (diff image.Image, n int) {
 			if alpha(c) == 0 {
 				continue
 			}
+			total++
 			if !colorEq(c, palette.Convert(c)) {
 				//diff.(draw.Image).Set(x, y, c)
 				index := simpleColorDiff(c, palette.Convert(c))/12 + 1
@@ -33,7 +33,7 @@ func genDiff(img image.Image) (diff image.Image, n int) {
 					index = uint8(len(dp) - 1)
 				}
 				diff.(*image.Paletted).SetColorIndex(x, y, index)
-				n++
+				wrong++
 			}
 		}
 	}
@@ -48,7 +48,8 @@ func alpha(c color.Color) uint8 {
 	case rgb:
 		return 255
 	default:
-		panic(fmt.Sprintf("Unexpected color type %T\n", v))
+		return color.RGBAModel.Convert(c).(color.RGBA).A
+		//panic(fmt.Sprintf("Unexpected color type %T\n", v))
 	}
 }
 

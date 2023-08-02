@@ -7,37 +7,33 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/spf13/pflag"
 )
 
-var cmds = map[string]func(args []string){
-	"palette": checkPalette,
-}
+const version = "v0.1.0"
 
-func checkPalette(args []string) {
-	if len(args) < 2 {
-		log.Fatal("too few arguments")
-	}
-	o := OpenORA(args[1])
-	f, err := o.zip.Open("mergedimage.png")
-	check(err)
-	diff, n := genDiff(getImg(f))
-	fmt.Printf("%v pixels differ from the palette\n", n)
-	savePng(diff, "output.png")
+var cmds = map[string]func(args []string){
+	"checkpalette": checkPalette,
+	"fixpalette":   fixPalette,
+	"version":      func([]string) { fmt.Println(version) },
 }
 
 func main() {
+	pflag.Parse()
 	log.SetFlags(0)
-	if len(os.Args) < 2 {
+	args := pflag.Args()
+	if len(args) == 0 {
 		printUsage()
 		os.Exit(0)
 	}
-	cmd, ok := cmds[os.Args[1]]
+	cmd, ok := cmds[args[0]]
 	if !ok {
-		fmt.Println("Unknown command:", os.Args[1])
+		fmt.Println("Unknown command:", args[0])
 		printUsage()
 		os.Exit(1)
 	}
-	cmd(os.Args[1:])
+	cmd(args[1:])
 }
 
 func printUsage() {
