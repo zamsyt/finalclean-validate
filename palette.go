@@ -116,7 +116,7 @@ func fixPalette(args []string) {
 func resizeCanvas(img image.Image, r image.Rectangle, offset image.Point) image.Image {
 	resized := image.NewNRGBA(r)
 	b := img.Bounds()
-	draw.Draw(resized, image.Rect(offset.X, offset.Y, offset.X+b.Dx(), offset.Y+b.Dy()), img, b.Min, draw.Src)
+	draw.Draw(resized, b.Add(offset), img, b.Min, draw.Src)
 	return resized
 }
 
