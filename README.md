@@ -20,3 +20,4 @@ For each layer, create a version with colors converted to match the palette (usi
 - `--alpha-threshold X` number between 0-255. Alpha values lower than this become transparent. Ones that are higher are converted to the closest color from the palette.
 - `--diff` only draw the changed pixels
 - `--crop` crop transparent edges off the image
+- `--fullsize` save each layer at the full canvas size (3000x2000)

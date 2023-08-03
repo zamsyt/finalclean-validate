@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const version = "v0.1.0"
+const version = "v0.1.1"
 
 var cmds = map[string]func(args []string){
 	"checkpalette": checkPalette,
