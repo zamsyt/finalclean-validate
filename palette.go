@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 	"os"
 	"path/filepath"
 
@@ -41,11 +42,13 @@ var layersToIgnore = []string{
 
 var cropFlag bool
 var diffFlag bool
+var fullsizeFlag bool
 var alphaTresholdFlag uint8
 
 func init() {
 	pflag.BoolVar(&cropFlag, "crop", false, "")
 	pflag.BoolVar(&diffFlag, "diff", false, "")
+	pflag.BoolVar(&fullsizeFlag, "fullsize", false, "")
 	pflag.Uint8Var(&alphaTresholdFlag, "alpha-threshold", 0, "")
 }
 
@@ -69,6 +72,8 @@ func checkLayer(o *ora, l oraLayer) {
 	fmt.Printf("[WARN] %q has %v/%v pixels not matching the palette\n", l.Name, wrong, total)
 	if cropFlag {
 		diff = crop(diff)
+	} else if fullsizeFlag {
+		diff = resizeCanvas(diff, image.Rect(0, 0, o.W, o.H), image.Pt(l.X, l.Y))
 	}
 	savePng(diff, filepath.Join(diffpath, l.Name+"_"+filepath.Base(l.Src)))
 }
@@ -101,9 +106,18 @@ func fixPalette(args []string) {
 		fmt.Println()
 		if cropFlag {
 			fixed = crop(fixed)
+		} else if fullsizeFlag {
+			fixed = resizeCanvas(fixed, image.Rect(0, 0, o.W, o.H), image.Pt(l.X, l.Y))
 		}
 		savePng(fixed, filepath.Join(fixedpath, l.Name+"_"+filepath.Base(l.Src)))
 	}
+}
+
+func resizeCanvas(img image.Image, r image.Rectangle, offset image.Point) image.Image {
+	resized := image.NewNRGBA(r)
+	b := img.Bounds()
+	draw.Draw(resized, image.Rect(offset.X, offset.Y, offset.X+b.Dx(), offset.Y+b.Dy()), img, b.Min, draw.Src)
+	return resized
 }
 
 func posterize(img image.Image, p color.Palette, alphaTreshold uint8) (paletted *image.Paletted, changed, toTransparent, toOpaque int) {
