@@ -8,10 +8,12 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const version = "v0.2.0"
+const version = "v0.3.0"
 
 var cmds = map[string]func(args []string){
 	"fullmerge": fullMerge,
+	"split":     split,
+	"join":      join,
 	//"version":   func([]string) { fmt.Println(version) },
 }
 
