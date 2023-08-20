@@ -32,7 +32,7 @@ func toPaletteLab(c color.Color) color.Color {
 	var best colorful.Color
 	for _, pc := range labPalette {
 		colorful.MakeColor(pc)
-		d := cc.DistanceLab(pc)
+		d := cc.DistanceCIE94(pc)
 		if d < min {
 			min = d
 			best = pc

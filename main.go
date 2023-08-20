@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version = "v0.4.0"
+const version = "v0.4.1"
 
 var cmds = map[string]func(args []string){
 	"diff":  fullMerge,
