@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version = "v0.3.1"
+const version = "v0.3.2"
 
 var cmds = map[string]func(args []string){
 	"fullmerge": fullMerge,
@@ -33,7 +33,8 @@ func main() {
 	cmd(args[1:])
 }
 
-const outpath = "diff.png"
+const basediffpath = "base-diff.png"
+const palettediffpath = "palette-diff.png"
 
 func fullMerge(args []string) {
 	if len(args) == 0 {
@@ -51,13 +52,16 @@ func fullMerge(args []string) {
 
 	_, baseCount := genDiff(baselayer, basePaletted)
 	fmt.Println(baseCount, "pixels corrected in BASE LAYER")
-	_, mergedCount := genDiff(mergedimg, mergedPaletted)
+	paletteDiff, mergedCount := genDiff(mergedPaletted, mergedimg)
 	fmt.Println(mergedCount, "pixels corrected in the merged image")
 
 	diff, count := genDiff(basePaletted, mergedPaletted)
 	fmt.Println(count, "pixels are different between BASE LAYER and the merged image")
-	fmt.Println("Saving diff in", outpath)
-	savePng(diff, outpath)
+	fmt.Println("Saving (corrected) pixels that are different from BASE LAYER in", basediffpath)
+	savePng(diff, basediffpath)
+
+	fmt.Println("Saving non-palette pixels in", palettediffpath)
+	savePng(paletteDiff, palettediffpath)
 }
 
 func printUsage() {

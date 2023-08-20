@@ -10,7 +10,7 @@ import (
 
 func TestPalette(t *testing.T) {
 	tp := append(color.Palette{color.Transparent}, palette...)
-	f, err := os.Open(outpath)
+	f, err := os.Open(basediffpath)
 	check(err)
 	img := getImg(f)
 	b := img.Bounds()

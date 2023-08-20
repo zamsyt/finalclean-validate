@@ -9,8 +9,9 @@
 
 `fullmerge <path-to-drawpile.ora>`
 
-Convert the entire merged image to the palette, and save an image of the (corrected) pixels that are different from "BASE LAYER" to diff.png
+Convert the entire merged image to the palette, and save an image of the (corrected) pixels that are different from "BASE LAYER" to base-diff.png
 
+v0.3.2: Save image of non-palette pixels in the merged image to palette-diff.png
 
 ### `split`
 
