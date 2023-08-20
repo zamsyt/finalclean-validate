@@ -35,6 +35,10 @@ func TestPaletteCount(t *testing.T) {
 			c := img.At(x, y)
 			if alpha(c) != 0 {
 				count++
+				if colorEq(c, palette.Convert(c)) {
+					t.Error("Expected palette diff to only have non-palette pixels")
+					return
+				}
 			}
 		}
 	}
