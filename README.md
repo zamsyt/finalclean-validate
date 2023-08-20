@@ -1,17 +1,18 @@
 # TFC-validate (2023)
 
-## Instructions v0.3.0
+## Instructions v0.3/v0.4
 
 1. Save the Drawpile as a .ora file
 2. With Go installed, in the repo root, run `go run . <command> [options]`
 
-### `fullmerge`
+### `diff`
 
-`fullmerge <path-to-drawpile.ora>`
+`diff <path-to-drawpile.ora>`
 
 Convert the entire merged image to the palette, and save an image of the (corrected) pixels that are different from "BASE LAYER" to base-diff.png
 
 v0.3.2: Save image of non-palette pixels in the merged image to palette-diff.png
+v0.4: Use CIELAB in palette conversion
 
 ### `split`
 
