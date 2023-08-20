@@ -23,3 +23,11 @@ Splits the (3000x2000) image to 125x125px sectors. Sector images are saved as `s
 `join [dir]`
 
 Joins the images created by `split` back into `combined.png`
+
+### `list` (v0.3.1)
+
+`list <path-to-drawpile.ora>`
+
+List layers in .ora file
+
+- `-n`, `--layer-number` print layer numbers

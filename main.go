@@ -4,24 +4,22 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/spf13/pflag"
 )
 
-const version = "v0.3.0"
+const version = "v0.3.1"
 
 var cmds = map[string]func(args []string){
 	"fullmerge": fullMerge,
 	"split":     split,
 	"join":      join,
+	"list":      listLayers,
 	//"version":   func([]string) { fmt.Println(version) },
 }
 
 func main() {
 	fmt.Printf("TFC validate %v...\n", version)
-	pflag.Parse()
 	log.SetFlags(0)
-	args := pflag.Args()
+	args := os.Args[1:]
 	if len(args) == 0 {
 		printUsage()
 		os.Exit(0)
