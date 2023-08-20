@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
 	"io"
 	"log"
@@ -14,10 +13,24 @@ import (
 
 var palette = loadPalette("r-slash-place-2023.gpl")
 
+var sectorArea = 500 * 500
+
 func posterize(img image.Image, p color.Palette) *image.Paletted {
 	b := img.Bounds()
 	paletted := image.NewPaletted(b, p)
-	draw.Draw(paletted, b, img, b.Min, draw.Src)
+	i := 0
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			i++
+			if i%sectorArea == 0 {
+				fmt.Print("#")
+			}
+			c := img.At(x, y)
+			pc := toPaletteLab(c)
+			paletted.Set(x, y, pc)
+		}
+	}
+	fmt.Println()
 	return paletted
 }
 

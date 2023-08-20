@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-const version = "v0.3.2"
+const version = "v0.4.0"
 
 var cmds = map[string]func(args []string){
-	"fullmerge": fullMerge,
-	"split":     split,
-	"join":      join,
-	"list":      listLayers,
+	"diff":  fullMerge,
+	"split": split,
+	"join":  join,
+	"list":  listLayers,
 	//"version":   func([]string) { fmt.Println(version) },
 }
 
@@ -25,6 +25,9 @@ func main() {
 		os.Exit(0)
 	}
 	cmd, ok := cmds[args[0]]
+	if args[0] == "fullmerge" { // backward compatibility
+		cmd, ok = cmds["diff"]
+	}
 	if !ok {
 		fmt.Println("Unknown command:", args[0])
 		printUsage()
@@ -39,19 +42,19 @@ const palettediffpath = "palette-diff.png"
 func fullMerge(args []string) {
 	if len(args) == 0 {
 		fmt.Println("not enough arguments")
-		fmt.Println("Usage:\n\tfullmerge <my-drawpile.ora>")
+		fmt.Println("Usage:\n\tdiff <my-drawpile.ora>")
 		os.Exit(1)
 	}
 	o := OpenORA(args[0])
 	f, err := o.zip.Open("mergedimage.png")
 	check(err)
-	mergedimg := getImg(f)
 	baselayer := o.Layer("BASE LAYER")
-	mergedPaletted := posterize(mergedimg, palette)
 	basePaletted := posterize(baselayer, palette)
-
 	_, baseCount := genDiff(baselayer, basePaletted)
 	fmt.Println(baseCount, "pixels corrected in BASE LAYER")
+
+	mergedimg := getImg(f)
+	mergedPaletted := posterize(mergedimg, palette)
 	paletteDiff, mergedCount := genDiff(mergedPaletted, mergedimg)
 	fmt.Println(mergedCount, "pixels corrected in the merged image")
 

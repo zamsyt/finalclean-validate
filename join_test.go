@@ -7,7 +7,7 @@ import (
 )
 
 func TestJoin(t *testing.T) {
-	if !imagesEq(getImgFile("diff.png"), getImgFile("combined.png")) {
+	if !imagesEq(getImgFile(basediffpath), getImgFile("combined.png")) {
 		t.Error("Combined image doesn't match original")
 	} /*else {
 		fmt.Println("combined image matches!")
